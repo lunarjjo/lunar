@@ -1,0 +1,18 @@
+# private environment
+.venv/
+
+# model weights & voice pack — downloaded on first run, never committed
+models/
+voices/
+
+# user's live configuration
+config/config.json
+
+# build & cache noise
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+*.wav
+*.part
+.pytest_cache/

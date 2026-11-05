@@ -1,0 +1,75 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test (${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: python -m compileall app tools
+      - run: python -m pytest
+
+  smoke:
+    name: smoke boot (real server, stub engine)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt httpx
+      - name: boot and probe
+        run: |
+          LUNAR_STUB=1 python -m app --port 8799 --no-banner &
+          SRV=$!
+          for i in $(seq 1 40); do
+            curl -sf http://127.0.0.1:8799/api/health >/dev/null && break
+            sleep 0.5
+          done
+          curl -sf http://127.0.0.1:8799/api/health | grep -q ok
+          curl -sf http://127.0.0.1:8799/api/config | grep -q af_heart
+          curl -sf http://127.0.0.1:8799/api/voices | grep -q am_michael
+          curl -sf http://127.0.0.1:8799/ | grep -q "type… enter speaks"
+          curl -sf http://127.0.0.1:8799/config | grep -q pronunciation
+          curl -sf http://127.0.0.1:8799/assets/live.js >/dev/null
+          kill $SRV
+          wait $SRV 2>/dev/null || true
+          echo "SMOKE-OK"
+
+  launcher:
+    name: launcher path (no model, offline skip)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: run.sh reaches the server start with deps installed
+        run: |
+          # install deps once so the launcher's pip step is a no-op
+          python -m pip install -r requirements.txt
+          # model is absent in CI: simulate the offline path — the launcher
+          # must skip downloads and hand over to the server cleanly
+          timeout 25 env LUNAR_OFFLINE=1 LUNAR_PORT=8801 ./run.sh > /tmp/launcher.log 2>&1 &
+          LPID=$!
+          sleep 12
+          curl -sf http://127.0.0.1:8801/api/health | grep -q ok
+          echo "LAUNCHER-OK"
+          kill $LPID 2>/dev/null || true
+          pkill -f "python -m app" 2>/dev/null || true
