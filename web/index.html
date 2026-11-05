@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lunar</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%238b5cf6'/%3E%3Ccircle cx='22' cy='13' r='11' fill='%230a0e14'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    /* ————— live console (minimalist) ————— */
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .console { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+    .stage {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 22px 30px;
+    }
+
+    #say {
+      width: 100%;
+      min-height: 92px;
+      max-height: 40vh;
+      resize: none;
+      font: inherit;
+      font-size: 1.28em;
+      line-height: 1.45;
+      color: var(--fg);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px 22px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    #say:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    #say::placeholder { color: var(--faint); }
+
+    .hintbar {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      color: var(--dim);
+      font-size: 0.78em;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .hintbar .k {
+      color: var(--accent-2);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 6px;
+    }
+
+    /* waveform */
+    #wave {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      height: 34px;
+      margin: 18px 0 4px;
+      opacity: .25;
+      transition: opacity .2s;
+    }
+    #wave.on { opacity: 1; }
+    #wave span {
+      width: 4px;
+      height: 6px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    /* history */
+    #history {
+      max-height: 26vh;
+      overflow-y: auto;
+      margin-top: 26px;
+      font-size: 0.82em;
+    }
+    #history .line {
+      color: var(--dim);
+      padding: 5px 2px;
+      border-bottom: 1px dashed color-mix(in srgb, var(--line) 60%, transparent);
+      cursor: pointer;
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+    }
+    #history .line:hover { color: var(--fg); }
+    #history .line .t { color: var(--faint); font-size: 0.85em; flex: none; }
+    #history .line .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .statusline {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 0.8em;
+      color: var(--dim);
+    }
+    #lat { color: var(--accent-2); font-variant-numeric: tabular-nums; }
+
+    #modelbar .progress { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <span class="brand">lunar</span>
+      <span class="small muted" id="voicename">af_heart</span>
+      <span class="spacer"></span>
+      <span class="small" id="engine"><span class="dot"></span><span id="enginetext">booting</span></span>
+      <span class="small" id="lat" class="hidden"></span>
+      <a class="small" href="/config">config</a>
+    </header>
+
+    <div class="banner hidden" id="modelbar">
+      <div class="row between">
+        <span>model not downloaded yet — lunar needs it once, then runs fully offline</span>
+        <button class="btn primary small" id="dlbtn">download now</button>
+      </div>
+      <div class="progress"><div id="dlbar"></div></div>
+      <div class="small muted" id="dltext"></div>
+    </div>
+
+    <main class="console">
+      <div class="stage">
+        <div id="wave"></div>
+        <textarea id="say" placeholder="type… enter speaks" autofocus spellcheck="false"></textarea>
+        <div class="hintbar">
+          <span><span class="k" id="enterkey">enter</span> speak</span>
+          <span><span class="k">esc</span> stop</span>
+          <span><span class="k">shift+enter</span> newline</span>
+          <span class="spacer" style="flex:1"></span>
+          <span class="faint">/en /id /v voice — per line</span>
+        </div>
+        <div id="history"></div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+  <script src="/assets/live.js"></script>
+</body>
+</html>
