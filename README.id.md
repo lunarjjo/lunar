@@ -21,7 +21,7 @@ ketik → Enter → kata pertama dalam beberapa ratus milidetik (streaming per k
 
 ## Mulai cepat
 
-Butuh Python 3.11+ (Ubuntu 24.04+ sudah membawanya sebagai `python3`).
+Butuh Python 3.12+ (Ubuntu 24.04+ sudah membawanya sebagai `python3`).
 
 ```bash
 git clone https://github.com/lunarjjo/lunar.git

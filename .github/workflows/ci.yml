@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.12", "3.13"]
+        python: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -60,16 +60,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: run.sh reaches the server start with deps installed
+      - name: run.sh boots the server when deps + stamp exist
         run: |
-          # install deps once so the launcher's pip step is a no-op
-          python -m pip install -r requirements.txt
-          # model is absent in CI: simulate the offline path — the launcher
-          # must skip downloads and hand over to the server cleanly
-          timeout 25 env LUNAR_OFFLINE=1 LUNAR_PORT=8801 ./run.sh > /tmp/launcher.log 2>&1 &
-          LPID=$!
-          sleep 12
+          # pre-populate the launcher's private venv exactly as a completed
+          # first run would leave it, so LUNAR_OFFLINE=1 skips network steps
+          python -m venv .venv
+          .venv/bin/pip install --quiet -r requirements.txt
+          echo "$(cksum requirements.txt | cut -d' ' -f1,2)" > .venv/.deps-stamp
+          timeout 30 env LUNAR_OFFLINE=1 LUNAR_PORT=8801 ./run.sh > /tmp/launcher.log 2>&1 &
+          sleep 15
+          cat /tmp/launcher.log
           curl -sf http://127.0.0.1:8801/api/health | grep -q ok
           echo "LAUNCHER-OK"
-          kill $LPID 2>/dev/null || true
           pkill -f "python -m app" 2>/dev/null || true

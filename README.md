@@ -20,7 +20,7 @@ type → Enter → first word in a few hundred ms (sentence-streamed)
 
 ## Quick start
 
-Requires Python 3.11+ (Ubuntu 24.04+ ships it as `python3`).
+Requires Python 3.12+ (Ubuntu 24.04+ ships it as `python3`).
 
 ```bash
 git clone https://github.com/lunarjjo/lunar.git

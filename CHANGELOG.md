@@ -30,7 +30,7 @@ Keep a Changelog; versions are semantic.
   (`tools/bench.py`), WS protocol e2e checker (`tools/e2e_check.py`).
 - Test suite: 56 stub-mode tests (unit + full WS protocol e2e) plus a
   real-model suite gated behind `LUNAR_LIVE=1`.
-- GitHub Actions CI: pytest matrix (3.11/3.12/3.13) + smoke boot of the
-  real server with health/HTML checks.
+- GitHub Actions CI: pytest matrix (3.12/3.13) + smoke boot of the
+  real server with health/HTML checks + launcher path verification.
 - Docs: English README + Indonesian README, NOTICE with full model
   attribution, MIT license.

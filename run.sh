@@ -13,9 +13,9 @@ say() { printf '\033[1;35m[lunar]\033[0m %s\n' "$*"; }
 # ---------------------------------------------------------------- python ----
 PY=""
 PY_ANY=""
-for cand in python3.13 python3.12 python3.11 python3; do
+for cand in python3.13 python3.12 python3; do
   if command -v "$cand" >/dev/null 2>&1; then
-    if "$cand" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+    if "$cand" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 12) else 1)' 2>/dev/null; then
       PY_ANY="${PY_ANY:-$cand}"
       # venv creation needs ensurepip on board
       if "$cand" -c 'import ensurepip' 2>/dev/null; then
@@ -29,7 +29,7 @@ if [ -z "$PY" ]; then
     echo "lunar found Python ($PY_ANY) but without venv support."
     echo "  fix: sudo apt install python3-venv (or python$($PY_ANY -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")')-venv)"
   else
-    echo "lunar needs Python 3.11+ (found: $(python3 --version 2>&1 || echo none))."
+    echo "lunar needs Python 3.12+ (found: $(python3 --version 2>&1 || echo none))."
     echo "  Ubuntu 24.04+ ships it as python3; on older systems: sudo apt install python3.12 python3.12-venv"
   fi
   exit 1
